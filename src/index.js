@@ -5,16 +5,26 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import app from "./firebase";
+import { Provider } from "react-redux";
+import { persistor, stroe } from "./store";
+import { PersistGate } from "redux-persist/integration/react";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+// {
+//   /* react-router-dom 으로 App.js 감싸기 */
+// }
+// {
+//   /* history API로 페이지간 이동이 가능하다 */
+// }
 root.render(
-  <React.StrictMode>
-    {/* react-router-dom 으로 App.js 감싸기 */}
-    {/* history API로 페이지간 이동이 가능하다 */}
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>
+  <Provider store={stroe}>
+    {/* redux에서 데이터 처리하는 동안 UI 지연 */}
+    <PersistGate loading={null} persistor={persistor}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </PersistGate>
+  </Provider>
 );
 
 // If you want to start measuring performance in your app, pass a function

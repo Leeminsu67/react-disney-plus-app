@@ -8,21 +8,23 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser, removeUser } from "../store/userSlice";
 
 function Nav() {
-  const initialUserData = localStorage.getItem("userData")
-    ? JSON.parse(localStorage.getItem("userData"))
-    : {};
-
   const [show, setShow] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [userData, setUserData] = useState(initialUserData);
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
   // firebase 인증을 위함
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
+
+  // redux 데이터 셋
+  const dispatch = useDispatch();
+  // redux 데이터 연결
+  const user = useSelector((state) => state.user);
 
   // 모든 페이지에서 Nav를 사용하고 있어서 여기서 확인 로직
   useEffect(() => {
@@ -62,8 +64,17 @@ function Nav() {
   const handleAuth = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
-        setUserData(result.user);
-        localStorage.setItem("userData", JSON.stringify(result.user));
+        // setUserData(result.user);
+        // redux에 데이터 전달
+        dispatch(
+          setUser({
+            id: result.user.uid,
+            email: result.user.email,
+            photoURL: result.user.photoURL,
+            displayName: result.user.displayName,
+          })
+        );
+        // localStorage.setItem("userData", JSON.stringify(result.user));
       })
       .catch((err) => console.error(err));
   };
@@ -72,6 +83,7 @@ function Nav() {
     signOut(auth)
       .then(() => {
         // Sign-out successful.
+        dispatch(removeUser());
         navigate("/");
       })
       .catch((error) => {
@@ -102,7 +114,7 @@ function Nav() {
           />
 
           <SignOut>
-            <UserImg src={`${userData.photoURL}`} alt="로그인 이미지" />
+            <UserImg src={`${user.photoURL}`} alt={user.displayName} />
             <DropDown>
               <span onClick={handleSignOut}>Sign Out</span>
             </DropDown>
